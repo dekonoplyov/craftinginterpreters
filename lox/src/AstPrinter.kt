@@ -3,6 +3,10 @@ class AstPrinter : Expr.Visitor<String> {
         return expr.accept(this)
     }
 
+    override fun visitBinaryExpr(expr: Expr.Binary): String {
+        return parenthesize(expr.operator.lexeme, expr.left, expr.right)
+    }
+
     override fun visitGroupingExpr(expr: Expr.Grouping): String {
         return parenthesize("group", expr.expression)
     }
@@ -15,14 +19,11 @@ class AstPrinter : Expr.Visitor<String> {
         return parenthesize(expr.operator.lexeme, expr.right)
     }
 
-    override fun visitBinaryExpr(expr: Expr.Binary): String {
-        return parenthesize(expr.operator.lexeme, expr.left, expr.right)
-    }
-
     private fun parenthesize(name: String, vararg exprs: Expr): String {
         val builder = StringBuilder()
 
-        builder.append("(").append(name)
+        builder.append("(")
+        builder.append(name)
         for (expr in exprs) {
             builder.append(" ")
             builder.append(expr.accept(this))
@@ -31,4 +32,27 @@ class AstPrinter : Expr.Visitor<String> {
 
         return builder.toString()
     }
+}
+
+class RpnPrinter : Expr.Visitor<String> {
+    fun print(expr: Expr): String {
+        return expr.accept(this)
+    }
+
+    override fun visitBinaryExpr(expr: Expr.Binary): String {
+        return "${expr.left.accept(this)} ${expr.right.accept(this)} ${expr.operator.lexeme}"
+    }
+
+    override fun visitGroupingExpr(expr: Expr.Grouping): String {
+        return expr.expression.accept(this)
+    }
+
+    override fun visitLiteralExpr(expr: Expr.Literal): String {
+        return expr.value.toString()
+    }
+
+    override fun visitUnaryExpr(expr: Expr.Unary): String {
+        return "${expr.operator.lexeme}${expr.right.accept(this)}"
+    }
+
 }
