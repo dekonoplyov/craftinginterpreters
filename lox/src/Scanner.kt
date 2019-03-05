@@ -1,5 +1,3 @@
-import kotlin.test.assert
-
 class Scanner(private val lox: Lox, private val source: String) {
     companion object {
         private val keywords = hashMapOf(

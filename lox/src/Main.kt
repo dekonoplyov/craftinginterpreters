@@ -4,11 +4,12 @@ import java.io.InputStreamReader
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.system.exitProcess
 
 class Lox {
     private var hadError = false
 
-    fun report(line: Int, where: String, message: String) {
+    private fun report(line: Int, where: String, message: String) {
         System.err.println("[line $line] Error$where: $message")
         hadError = true
     }
@@ -32,7 +33,7 @@ class Lox {
         run(String(bytes, Charset.defaultCharset()))
 
         if (hadError) {
-            System.exit(65)
+            exitProcess(65)
         }
     }
 
@@ -54,7 +55,7 @@ fun main(args: Array<String>) {
     when {
         args.size > 1 -> {
             println("Usage: jlox [script]")
-            System.exit(64)
+            exitProcess(64)
         }
         args.size == 1 -> lox.runFile(args[0])
         else -> lox.runPrompt()
