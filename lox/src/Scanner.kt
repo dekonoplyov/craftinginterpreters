@@ -1,3 +1,5 @@
+import kotlin.test.assert
+
 class Scanner(private val lox: Lox, private val source: String) {
     companion object {
         private val keywords = hashMapOf(
@@ -106,7 +108,7 @@ class Scanner(private val lox: Lox, private val source: String) {
             advance()
         }
 
-        // Skip trailing */
+        // Skip the trailing '*/'.
         repeat(2) {
             if (isAtEnd()) {
                 lox.error(line, "Unterminated multiline comment.")
@@ -124,12 +126,11 @@ class Scanner(private val lox: Lox, private val source: String) {
             advance()
         }
 
+        // Trim the closing ".
         if (isAtEnd()) {
             lox.error(line, "Unterminated string.")
             return
         }
-
-        // The closing ".
         advance()
 
         // Trim the surrounding quotes.
@@ -179,6 +180,7 @@ class Scanner(private val lox: Lox, private val source: String) {
     }
 
     private fun advance(): Char {
+        check(!isAtEnd()) { "Trying to advance at end source"}
         return source[current++]
     }
 
