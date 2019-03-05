@@ -6,7 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class Lox {
-    var hadError = false
+    private var hadError = false
 
     fun report(line: Int, where: String, message: String) {
         System.err.println("[line $line] Error$where: $message")
@@ -17,8 +17,9 @@ class Lox {
         report(line, "", message)
     }
 
-    fun run(source: String) {
-        val tokens = scanTokens(source)
+    private fun run(source: String) {
+        val scanner = Scanner(this, source)
+        val tokens = scanner.scanTokens()
 
         for (token in tokens) {
             println(token)
@@ -47,8 +48,6 @@ class Lox {
         }
     }
 }
-
-
 
 fun main(args: Array<String>) {
     val lox = Lox()
