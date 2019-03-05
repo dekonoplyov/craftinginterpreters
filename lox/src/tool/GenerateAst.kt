@@ -5,8 +5,15 @@ import java.io.PrintWriter
 import kotlin.system.exitProcess
 
 abstract class Expr {
-    class Binary(val a: Expr) : Expr() {
+    interface Visitor<R> {
+        fun visit(expr: Expr): R
+    }
+    abstract fun<R> accept(visitor: Visitor<R>): R
 
+    class Binary(val a: Expr) : Expr() {
+        override fun<R> accept(visitor: Visitor<R>): R {
+            return visitor.visit(this)
+        }
     }
 }
 
@@ -21,23 +28,48 @@ fun defineType(baseName: String, className: String, fields: String, writer: Prin
             .split(", ")
             .joinToString(
                 prefix = "    class $className(",
-                postfix = ") : $baseName()"
+                postfix = ") : $baseName() {"
             ) { fieldToKotlinMemberDeclaration(it) }
+    )
+    writer.println("        override fun<R> accept(visitor: Visitor<R>): R {")
+    writer.println("            return visitor.visit$className$baseName(this)")
+    writer.println("        }")
+    writer.println("    }")
+}
+fun defineVisitMethod(type: String, baseName: String): String {
+    val className = type.split(":")[0].trim()
+    return "        fun visit$className$baseName(${baseName.toLowerCase()}: $className): R"
+}
+
+fun defineVisitor(baseName: String, types: ArrayList<String>, writer: PrintWriter) {
+    writer.println(
+        types
+            .joinToString(
+                prefix = "    interface Visitor<R> {\n",
+                postfix = "\n    }",
+                separator = "\n"
+            ) {defineVisitMethod(it, baseName)}
     )
 }
 
 @Throws(IOException::class)
-fun defineAst(outputDir: String, baseName: String, rules: ArrayList<String>) {
+fun defineAst(outputDir: String, baseName: String, types: ArrayList<String>) {
     val path = "$outputDir/$baseName.kt"
     val writer = PrintWriter(path, "UTF-8")
 
     writer.println("abstract class $baseName {")
 
-    for (rule in rules) {
-        var (className, fields) = rule.split(':')
+    defineVisitor(baseName, types, writer)
+    writer.println()
+    writer.println("    abstract fun<R> accept(visitor: Expr.Visitor<R>): R")
+    writer.println()
+
+    for (type in types) {
+        var (className, fields) = type.split(':')
         className = className.trim()
         fields = fields.trim()
         defineType(baseName, className, fields, writer)
+        writer.println()
     }
 
     writer.println("}")
