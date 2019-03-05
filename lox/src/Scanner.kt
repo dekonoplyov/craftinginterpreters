@@ -55,7 +55,13 @@ class Scanner(private val lox: Lox, private val source: String) {
             '=' -> addToken(if (match('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL)
             '<' -> addToken(if (match('=')) TokenType.LESS_EQUAL else TokenType.LESS)
             '>' -> addToken(if (match('=')) TokenType.GREATER_EQUAL else TokenType.GREATER)
-            '/' -> if (match('/')) processComment() else addToken(TokenType.SLASH)
+            '/' -> {
+                when {
+                    match('/') -> processComment()
+                    match('*') -> processMultiLineComment()
+                    else -> addToken(TokenType.SLASH)
+                }
+            }
             '"' -> processString()
             else -> {
                 when {
@@ -77,7 +83,7 @@ class Scanner(private val lox: Lox, private val source: String) {
     }
 
     private fun match(expected: Char): Boolean {
-        if (isAtEnd() || source[current + 1] != expected) {
+        if (isAtEnd() || source[current] != expected) {
             return false
         }
         
@@ -88,6 +94,24 @@ class Scanner(private val lox: Lox, private val source: String) {
     private fun processComment() {
         // A comment goes until the end of the line.
         while (peek() != '\n' && !isAtEnd()) {
+            advance()
+        }
+    }
+
+    private fun processMultiLineComment() {
+        while (peek() != '*' && peekNext() != '/' && !isAtEnd()) {
+            if (peek() == '\n') {
+                line++
+            }
+            advance()
+        }
+
+        // Skip trailing */
+        repeat(2) {
+            if (isAtEnd()) {
+                lox.error(line, "Unterminated multiline comment.")
+                return
+            }
             advance()
         }
     }
