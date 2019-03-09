@@ -4,22 +4,9 @@ import java.io.IOException
 import java.io.PrintWriter
 import kotlin.system.exitProcess
 
-abstract class Expr {
-    interface Visitor<R> {
-        fun visit(expr: Expr): R
-    }
-    abstract fun<R> accept(visitor: Visitor<R>): R
-
-    class Binary(val a: Expr) : Expr() {
-        override fun<R> accept(visitor: Visitor<R>): R {
-            return visitor.visit(this)
-        }
-    }
-}
-
 fun fieldToKotlinMemberDeclaration(field: String): String {
     val (type, name) = field.split(' ')
-    return "val $name: ${if (type == "Object") "Any" else type}"
+    return "val $name: ${if (type == "Object") "Any?" else type}"
 }
 
 fun defineType(baseName: String, className: String, fields: String, writer: PrintWriter) {
