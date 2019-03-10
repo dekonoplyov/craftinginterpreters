@@ -18,13 +18,25 @@ class Lox {
         report(line, "", message)
     }
 
+    fun error(token: Token, message: String) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message)
+        } else {
+            report(token.line, " at '${token.lexeme}'", message)
+        }
+    }
+
     private fun run(source: String) {
         val scanner = Scanner(this, source)
         val tokens = scanner.scanTokens()
+        val parser = Parser(this, tokens)
+        val expr = parser.parse()
 
-        for (token in tokens) {
-            println(token)
+        if (hadError) {
+            return
         }
+        // TODO consider parse return value not null
+        println(AstPrinter().print(expr!!))
     }
 
     @Throws(IOException::class)
@@ -51,28 +63,13 @@ class Lox {
 }
 
 fun main(args: Array<String>) {
-    val expression = Expr.Binary(
-        Expr.Binary(
-            Expr.Literal(1),
-            Token(TokenType.STAR, "-", null, 1),
-            Expr.Literal(2)
-        ),
-        Token(TokenType.STAR, "*", null, 1),
-        Expr.Binary(
-            Expr.Literal(3),
-            Token(TokenType.STAR, "+", null, 1),
-            Expr.Literal(4)
-        )
-    )
-
-    println(RpnPrinter().print(expression))
-//    val lox = Lox()
-//    when {
-//        args.size > 1 -> {
-//            println("Usage: jlox [script]")
-//            exitProcess(64)
-//        }
-//        args.size == 1 -> lox.runFile(args[0])
-//        else -> lox.runPrompt()
-//    }
+    val lox = Lox()
+    when {
+        args.size > 1 -> {
+            println("Usage: jlox [script]")
+            exitProcess(64)
+        }
+        args.size == 1 -> lox.runFile(args[0])
+        else -> lox.runPrompt()
+    }
 }
