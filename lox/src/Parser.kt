@@ -12,7 +12,19 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun expression(): Expr {
-        return equality()
+        return comma()
+    }
+
+    private fun comma(): Expr {
+        var expr = equality()
+
+        while (match(TokenType.COMMA)) {
+            val operator = previous()
+            val right = equality()
+            expr = Expr.Binary(expr, operator, right)
+        }
+
+        return expr
     }
 
     private fun equality(): Expr {
