@@ -28,7 +28,7 @@ class Lox {
     }
 
     fun runtimeError(error: Interpreter.RuntimeError) {
-        println("${error.message}\n[line ${error.token.line}]")
+        System.err.println("${error.message}\n[line ${error.token.line}]")
         hadRuntimeError = true
     }
 
