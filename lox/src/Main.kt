@@ -35,8 +35,11 @@ class Lox {
         if (hadError) {
             return
         }
-        // TODO consider parse return value not null
-        println(AstPrinter().print(expr!!))
+        // FIXME bad implicit invariant
+        // where expr is null when hadError
+        if (expr != null) {
+            println(AstPrinter().print(expr))
+        }
     }
 
     @Throws(IOException::class)
