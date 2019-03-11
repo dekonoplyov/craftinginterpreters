@@ -26,7 +26,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?> {
                 if (left is Double && right is Double) {
                     numberOperation(left, right, expr.operator)
                 } else if (left is String && right is String) {
-                    return left + right
+                    left + right
                 } else {
                     throw RuntimeError(expr.operator, "Invalid operand types for '+' operator")
                 }
