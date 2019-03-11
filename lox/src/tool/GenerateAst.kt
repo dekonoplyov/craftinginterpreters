@@ -48,7 +48,7 @@ fun defineAst(outputDir: String, baseName: String, types: ArrayList<String>) {
 
     defineVisitor(baseName, types, writer)
     writer.println()
-    writer.println("    abstract fun<R> accept(visitor: Expr.Visitor<R>): R")
+    writer.println("    abstract fun<R> accept(visitor: $baseName.Visitor<R>): R")
     writer.println()
 
     for (type in types) {
@@ -75,5 +75,10 @@ fun main(args: Array<String>) {
         "Grouping : Expr expression",
         "Literal  : Object value",
         "Unary    : Token operator, Expr right"
+    ))
+
+    defineAst(outputDir, "Stmt", arrayListOf(
+        "Expression : Expr expression",
+        "Print      : Expr expression"
     ))
 }

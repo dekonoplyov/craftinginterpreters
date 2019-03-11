@@ -36,18 +36,16 @@ class Lox {
         val scanner = Scanner(this, source)
         val tokens = scanner.scanTokens()
         val parser = Parser(this, tokens)
-        val expr = parser.parse()
+        // throws while parsing
+        // should be fixed after synchronization
+        val statements = parser.parse()
 
         if (hadError) {
             return
         }
-        // FIXME bad implicit invariant
-        // where expr is null when hadError
 
         val interpreter = Interpreter(this)
-        if (expr != null) {
-            interpreter.interpret(expr)
-        }
+        interpreter.interpret(statements)
     }
 
     @Throws(IOException::class)
@@ -80,11 +78,11 @@ class Lox {
 fun main(args: Array<String>) {
     val lox = Lox()
     when {
+        args.size == 1 -> lox.runFile(args[0])
         args.size > 1 -> {
             println("Usage: jlox [script]")
             exitProcess(64)
         }
-        args.size == 1 -> lox.runFile(args[0])
         else -> lox.runPrompt()
     }
 }

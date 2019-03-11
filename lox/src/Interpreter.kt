@@ -1,10 +1,11 @@
-class Interpreter(private val lox: Lox) : Expr.Visitor<Any?> {
+class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
-    fun interpret(expr: Expr) {
+    fun interpret(statements: List<Stmt>) {
         try {
-            val value = evaluate(expr)
-            println(stringify(value))
+            for (statement in statements) {
+                execute(statement)
+            }
         } catch (e: RuntimeError) {
             lox.runtimeError(e)
         }
@@ -12,6 +13,10 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?> {
 
     private fun evaluate(expr: Expr): Any? {
         return expr.accept(this)
+    }
+
+    private fun execute(statement: Stmt) {
+        statement.accept(this)
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary): Any? {
@@ -63,6 +68,15 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?> {
             }
             else -> throw RuntimeError(expr.operator, "Invalid unary operator ${expr.operator.type}")
         }
+    }
+
+    override fun visitExpressionStmt(stmt: Stmt.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrintStmt(stmt: Stmt.Print) {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
     }
 
     private fun numberOperation(left: Any?, right: Any?, token: Token): Any? {

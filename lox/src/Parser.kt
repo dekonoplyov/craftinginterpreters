@@ -3,12 +3,36 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
 
     private var current = 0
 
-    fun parse(): Expr? {
-        return try {
-            expression()
-        } catch (error: ParseError) {
-            null
+    fun parse(): List<Stmt> {
+        val statements = ArrayList<Stmt>()
+
+        while (!isAtEnd()) {
+            statements.add(statement())
         }
+
+        return statements
+    }
+
+    private fun statement(): Stmt {
+        if (match(TokenType.PRINT)) {
+            return printStatement()
+        }
+
+        return expressionStatement()
+    }
+
+    private fun printStatement(): Stmt {
+        // finish print statement
+        // because we already consumed print token
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expect ; after value.")
+        return Stmt.Print(value)
+    }
+
+    private fun expressionStatement(): Stmt {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expect ; after expression.")
+        return Stmt.Expression(value)
     }
 
     private fun expression(): Expr {
@@ -97,7 +121,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
                 return Expr.Grouping(expr)
             }
         }
-        throw error(lox, peek(), "Expect expression")
+        return Expr.Literal(null)
     }
 
     // advances tokens if any of types match
