@@ -96,15 +96,6 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
                 consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
                 return Expr.Grouping(expr)
             }
-            // possible error producing solution
-            // cut binary operator, cur expr, continue parsing
-            match(TokenType.PLUS) -> {
-                val operator = previous()
-                val expr = expression()
-                lox.error(operator, "shit")
-                lox.error(1, "fucks")
-                return expression()
-            }
         }
         throw error(lox, peek(), "Expect expression")
     }
