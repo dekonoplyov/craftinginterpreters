@@ -8,6 +8,7 @@ import kotlin.system.exitProcess
 
 class Lox {
     private var hadError = false
+    private var hadRuntimeError = false
 
     private fun report(line: Int, where: String, message: String) {
         System.err.println("[line $line] Error$where: $message")
@@ -26,6 +27,11 @@ class Lox {
         }
     }
 
+    fun runtimeError(error: Interpreter.RuntimeError) {
+        println("${error.message}\n[line ${error.token.line}]")
+        hadRuntimeError = true
+    }
+
     private fun run(source: String) {
         val scanner = Scanner(this, source)
         val tokens = scanner.scanTokens()
@@ -37,8 +43,10 @@ class Lox {
         }
         // FIXME bad implicit invariant
         // where expr is null when hadError
+
+        val interpreter = Interpreter(this)
         if (expr != null) {
-            println(AstPrinter().print(expr))
+            interpreter.interpret(expr)
         }
     }
 
@@ -49,6 +57,10 @@ class Lox {
 
         if (hadError) {
             exitProcess(65)
+        }
+
+        if (hadRuntimeError) {
+            exitProcess(70)
         }
     }
 
