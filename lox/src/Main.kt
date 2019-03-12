@@ -32,7 +32,7 @@ class Lox {
         hadRuntimeError = true
     }
 
-    private fun run(source: String) {
+    private fun run(source: String, environment: Environment) {
         val scanner = Scanner(this, source)
         val tokens = scanner.scanTokens()
         val parser = Parser(this, tokens)
@@ -44,14 +44,14 @@ class Lox {
             return
         }
 
-        val interpreter = Interpreter(this)
+        val interpreter = Interpreter(this, environment)
         interpreter.interpret(statements)
     }
 
     @Throws(IOException::class)
     fun runFile(path: String) {
         val bytes = Files.readAllBytes(Paths.get(path))
-        run(String(bytes, Charset.defaultCharset()))
+        run(String(bytes, Charset.defaultCharset()), Environment())
 
         if (hadError) {
             exitProcess(65)
@@ -66,10 +66,11 @@ class Lox {
     fun runPrompt() {
         val input = InputStreamReader(System.`in`)
         val reader = BufferedReader(input)
+        val environment = Environment()
 
         while (true) {
             print("> ")
-            run(reader.readLine())
+            run(reader.readLine(), environment)
             hadError = false
         }
     }

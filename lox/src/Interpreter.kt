@@ -1,4 +1,5 @@
-class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(private val lox: Lox,
+                  private val environment: Environment) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
     fun interpret(statements: List<Stmt>) {
@@ -70,6 +71,10 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         }
     }
 
+    override fun visitVariableExpr(expr: Expr.Variable): Any? {
+        return environment.get(expr.name)
+    }
+
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
     }
@@ -77,6 +82,12 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     override fun visitPrintStmt(stmt: Stmt.Print) {
         val value = evaluate(stmt.expression)
         println(stringify(value))
+    }
+
+    override fun visitVarStmt(stmt: Stmt.Var) {
+        val value = evaluate(stmt.initializer)
+        println(stmt.name.lexeme)
+        environment.define(stmt.name.lexeme, value)
     }
 
     private fun numberOperation(left: Any?, right: Any?, token: Token): Any? {
@@ -126,7 +137,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
 
     private fun stringify(obj: Any?): String {
         if (obj == null) {
-            return ""
+            return "nil"
         }
 
         // Hack. Work around Java adding ".0" to integer-valued doubles.

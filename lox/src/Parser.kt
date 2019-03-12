@@ -7,10 +7,26 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         val statements = ArrayList<Stmt>()
 
         while (!isAtEnd()) {
-            statements.add(statement())
+            val stmt = declaration()
+            if (stmt != null) {
+                statements.add(stmt)
+            }
         }
 
         return statements
+    }
+
+    private fun declaration(): Stmt? {
+        try {
+            if (match(TokenType.VAR)) {
+                return varDeclaration()
+            }
+
+            return statement()
+        } catch (e: ParseError) {
+            synchronize()
+            return null
+        }
     }
 
     private fun statement(): Stmt {
@@ -19,6 +35,18 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         }
 
         return expressionStatement()
+    }
+
+    private fun varDeclaration(): Stmt {
+        val name = consume(TokenType.IDENTIFIER, "Expect variable name.")
+        // potential problem
+        var initializer: Expr = Expr.Literal(null)
+        if (match(TokenType.EQUAL)) {
+            initializer = expression()
+        }
+
+        consume(TokenType.SEMICOLON, "Expect ; after variable declaration.")
+        return Stmt.Var(name, initializer)
     }
 
     private fun printStatement(): Stmt {
@@ -115,6 +143,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
             match(TokenType.FALSE) -> return Expr.Literal(false)
             match(TokenType.NIL) -> return Expr.Literal(null)
             match(TokenType.NUMBER, TokenType.STRING) -> return Expr.Literal(previous().literal)
+            match(TokenType.IDENTIFIER) -> return Expr.Variable(previous())
             match(TokenType.LEFT_PAREN) -> {
                 val expr = expression()
                 consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
@@ -145,7 +174,9 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun synchronize() {
-        advance()
+        if (!isAtEnd()) {
+            advance()
+        }
 
         while (!isAtEnd()) {
             if (previous().type == TokenType.SEMICOLON) {

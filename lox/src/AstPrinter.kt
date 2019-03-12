@@ -19,6 +19,10 @@ class AstPrinter : Expr.Visitor<String> {
         return parenthesize(expr.operator.lexeme, expr.right)
     }
 
+    override fun visitVariableExpr(expr: Expr.Variable): String {
+        return expr.name.lexeme
+    }
+
     private fun parenthesize(name: String, vararg exprs: Expr): String {
         val builder = StringBuilder()
 
@@ -55,4 +59,7 @@ class RpnPrinter : Expr.Visitor<String> {
         return "${expr.operator.lexeme}${expr.right.accept(this)}"
     }
 
+    override fun visitVariableExpr(expr: Expr.Variable): String {
+        return expr.name.lexeme
+    }
 }
