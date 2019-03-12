@@ -64,7 +64,25 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun expression(): Expr {
-        return comma()
+        return assignment()
+    }
+
+    private fun assignment(): Expr {
+        val expr = comma()
+
+        if (match(TokenType.EQUAL)) {
+            val equals = previous()
+            val value = assignment()
+
+            if (expr is Expr.Variable) {
+                val name = expr.name
+                return Expr.Assign(name, value)
+            }
+
+            error(lox, equals, "Invalid assignment target.")
+        }
+
+        return expr
     }
 
     private fun comma(): Expr {

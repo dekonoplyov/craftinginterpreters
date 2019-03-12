@@ -20,6 +20,12 @@ class Interpreter(private val lox: Lox,
         statement.accept(this)
     }
 
+    override fun visitAssignExpr(expr: Expr.Assign): Any? {
+        val value = evaluate(expr.value)
+        environment.assign(expr.name, value)
+        return value
+    }
+
     override fun visitBinaryExpr(expr: Expr.Binary): Any? {
         val left = evaluate(expr.left)
         val right = evaluate(expr.right)
@@ -86,7 +92,6 @@ class Interpreter(private val lox: Lox,
 
     override fun visitVarStmt(stmt: Stmt.Var) {
         val value = evaluate(stmt.initializer)
-        println(stmt.name.lexeme)
         environment.define(stmt.name.lexeme, value)
     }
 

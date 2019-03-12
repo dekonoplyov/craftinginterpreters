@@ -71,6 +71,7 @@ fun main(args: Array<String>) {
 
     val outputDir = args[0]
     defineAst(outputDir, "Expr", arrayListOf(
+        "Assign   : Token name, Expr value",
         "Binary   : Expr left, Token operator, Expr right",
         "Grouping : Expr expression",
         "Literal  : Object value",
