@@ -6,7 +6,12 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-class Lox {
+class Lox(val mode: Mode) {
+    enum class Mode {
+        REPL,
+        FILE
+    }
+
     private var hadError = false
     private var hadRuntimeError = false
 
@@ -77,13 +82,12 @@ class Lox {
 }
 
 fun main(args: Array<String>) {
-    val lox = Lox()
     when {
-        args.size == 1 -> lox.runFile(args[0])
+        args.size == 1 -> Lox(Lox.Mode.FILE).runFile(args[0])
         args.size > 1 -> {
             println("Usage: jlox [script]")
             exitProcess(64)
         }
-        else -> lox.runPrompt()
+        else -> Lox(Lox.Mode.REPL).runPrompt()
     }
 }

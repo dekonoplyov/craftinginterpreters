@@ -82,7 +82,12 @@ class Interpreter(private val lox: Lox,
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
-        evaluate(stmt.expression)
+        if (lox.mode == Lox.Mode.REPL) {
+            val value = evaluate(stmt.expression)
+            println(stringify(value))
+        } else {
+            evaluate(stmt.expression)
+        }
     }
 
     override fun visitPrintStmt(stmt: Stmt.Print) {
