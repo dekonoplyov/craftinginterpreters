@@ -80,6 +80,7 @@ fun main(args: Array<String>) {
     ))
 
     defineAst(outputDir, "Stmt", arrayListOf(
+        "Block      : List<Stmt> statements",
         "Expression : Expr expression",
         "Print      : Expr expression",
         "Var        : Token name, Expr initializer"

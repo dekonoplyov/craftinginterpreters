@@ -1,6 +1,7 @@
-class Interpreter(private val lox: Lox,
-                  private val environment: Environment) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
+
+    private var environment = Environment()
 
     fun interpret(statements: List<Stmt>) {
         try {
@@ -98,6 +99,24 @@ class Interpreter(private val lox: Lox,
     override fun visitVarStmt(stmt: Stmt.Var) {
         val value = evaluate(stmt.initializer)
         environment.define(stmt.name.lexeme, value)
+    }
+
+    override fun visitBlockStmt(stmt: Stmt.Block) {
+        executeBlock(stmt.statements, Environment(environment))
+    }
+
+    private fun executeBlock(statements: List<Stmt>, environment: Environment) {
+        val previous = this.environment
+
+        try {
+            this.environment = environment
+
+            for (statement in statements) {
+                execute(statement)
+            }
+        } finally {
+            this.environment = previous
+        }
     }
 
     private fun numberOperation(left: Any?, right: Any?, token: Token): Any? {

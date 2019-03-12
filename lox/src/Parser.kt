@@ -30,11 +30,11 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt {
-        if (match(TokenType.PRINT)) {
-            return printStatement()
+        return when {
+            match(TokenType.PRINT) -> printStatement()
+            match(TokenType.LEFT_BRACE) -> Stmt.Block(block())
+            else -> expressionStatement()
         }
-
-        return expressionStatement()
     }
 
     private fun varDeclaration(): Stmt {
@@ -55,6 +55,20 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         val value = expression()
         consume(TokenType.SEMICOLON, "Expect ; after value.")
         return Stmt.Print(value)
+    }
+
+    private fun block(): List<Stmt> {
+        val statements = ArrayList<Stmt>()
+
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            val statement = declaration()
+            if (statement != null) {
+                statements.add(statement)
+            }
+        }
+
+        consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
     }
 
     private fun expressionStatement(): Stmt {
