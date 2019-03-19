@@ -1,0 +1,11 @@
+if (1 + 2 == 3)
+    print "right";
+else {
+    print "wrong";
+}
+
+if (true)
+    if (false)
+        print "wrong";
+    else
+        print "right";

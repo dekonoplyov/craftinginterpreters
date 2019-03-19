@@ -105,6 +105,14 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         executeBlock(stmt.statements, Environment(environment))
     }
 
+    override fun visitIfStmt(stmt: Stmt.If) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch)
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch)
+        }
+    }
+
     private fun executeBlock(statements: List<Stmt>, environment: Environment) {
         val previous = this.environment
 
