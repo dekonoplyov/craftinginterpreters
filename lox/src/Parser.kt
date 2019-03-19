@@ -92,11 +92,23 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun expression(): Expr {
-        return assignment()
+        return comma()
+    }
+
+    private fun comma(): Expr {
+        var expr = assignment()
+
+        while (match(TokenType.COMMA)) {
+            val operator = previous()
+            val right = assignment()
+            expr = Expr.Binary(expr, operator, right)
+        }
+
+        return expr
     }
 
     private fun assignment(): Expr {
-        val expr = comma()
+        val expr = equality()
 
         if (match(TokenType.EQUAL)) {
             val equals = previous()
@@ -108,18 +120,6 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
             }
 
             error(lox, equals, "Invalid assignment target.")
-        }
-
-        return expr
-    }
-
-    private fun comma(): Expr {
-        var expr = equality()
-
-        while (match(TokenType.COMMA)) {
-            val operator = previous()
-            val right = equality()
-            expr = Expr.Binary(expr, operator, right)
         }
 
         return expr
