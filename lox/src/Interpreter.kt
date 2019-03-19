@@ -50,6 +50,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
             TokenType.GREATER -> numberOperation(left, right, expr.operator)
             TokenType.EQUAL_EQUAL -> isEqual(left, right)
             TokenType.BANG_EQUAL -> !isEqual(left, right)
+            TokenType.COMMA -> right
             else -> throw RuntimeError(expr.operator, "Invalid binary operator ${expr.operator.type}")
         }
     }
@@ -60,6 +61,23 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
 
     override fun visitLiteralExpr(expr: Expr.Literal): Any? {
         return expr.value
+    }
+
+    override fun visitLogicalExpr(expr: Expr.Logical): Any? {
+        val left = evaluate(expr.left)
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left))
+                return left
+        } else if (expr.operator.type == TokenType.AND) {
+            if (!isTruthy(left))
+                return left
+        } else {
+            lox.runtimeError(Interpreter.RuntimeError(expr.operator,
+                "Wrong token '${expr.operator.type}' in logical expression"))
+        }
+
+        return evaluate(expr.right)
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): Any? {

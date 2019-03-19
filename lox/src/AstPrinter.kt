@@ -1,4 +1,8 @@
 class AstPrinter : Expr.Visitor<String> {
+    override fun visitLogicalExpr(expr: Expr.Logical): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     fun print(expr: Expr): String {
         return expr.accept(this)
     }
@@ -43,6 +47,10 @@ class AstPrinter : Expr.Visitor<String> {
 }
 
 class RpnPrinter : Expr.Visitor<String> {
+    override fun visitLogicalExpr(expr: Expr.Logical): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     fun print(expr: Expr): String {
         return expr.accept(this)
     }
