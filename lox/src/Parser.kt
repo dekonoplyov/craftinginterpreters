@@ -31,6 +31,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
 
     private fun statement(): Stmt {
         return when {
+            match(TokenType.FOR) -> forStatement()
             match(TokenType.IF) -> ifStatement()
             match(TokenType.PRINT) -> printStatement()
             match(TokenType.WHILE) -> whileStatement()
@@ -42,13 +43,54 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     private fun varDeclaration(): Stmt {
         val name = consume(TokenType.IDENTIFIER, "Expect variable name.")
         // potential problem
-        var initializer: Expr = Expr.Literal(null)
-        if (match(TokenType.EQUAL)) {
-            initializer = expression()
+        val initializer = when {
+            match(TokenType.EQUAL) -> expression()
+            else -> Expr.Literal(null)
         }
 
         consume(TokenType.SEMICOLON, "Expect ; after variable declaration.")
         return Stmt.Var(name, initializer)
+    }
+
+    private fun forStatement(): Stmt {
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
+
+        val initializer = when {
+            match(TokenType.SEMICOLON) -> null
+            match(TokenType.VAR) -> varDeclaration()
+            else -> expressionStatement()
+        }
+
+        val condition = when {
+            check(TokenType.SEMICOLON) -> null
+            else -> expression()
+        }
+        consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+
+        val increment = when {
+            check(TokenType.RIGHT_PAREN) -> null
+            else -> expression()
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after clauses.")
+
+        var body = statement()
+
+        // desugaring
+        if (increment != null) {
+           body = Stmt.Block(
+               arrayListOf(body, Stmt.Expression(increment)))
+        }
+
+        if (condition != null) {
+            body = Stmt.While(condition, body)
+        }
+
+        if (initializer != null) {
+            body = Stmt.Block(
+                arrayListOf(initializer, body))
+        }
+
+        return body
     }
 
     private fun ifStatement(): Stmt {

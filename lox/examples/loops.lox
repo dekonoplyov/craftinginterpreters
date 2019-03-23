@@ -3,3 +3,14 @@ while (l > 0) {
     print l;
     l = l - 1;
 }
+
+for (; l > - 1;) {
+    print l;
+    l = l - 1;
+}
+
+for (var i = 5; i < 10; i = i + 1) {
+    print i;
+}
+
+
