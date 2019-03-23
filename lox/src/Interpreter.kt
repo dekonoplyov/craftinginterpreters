@@ -96,6 +96,23 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         }
     }
 
+    override fun visitCallExpr(expr: Expr.Call): Any? {
+        val callee = evaluate(expr.callee)
+
+        val arguments = arrayListOf(expr.arguments.forEach { evaluate(it) })
+
+        if (callee !is LoxCallable) {
+            throw RuntimeError(expr.paren, "Can only call functions and classes.")
+        }
+
+        if (callee.arity() != arguments.size) {
+            throw RuntimeError(expr.paren, "Expected ${callee.arity()} arguments, got ${arguments.size}.")
+        }
+
+        return callee.call(this, arguments)
+
+    }
+
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
         return environment.get(expr.name)
     }
