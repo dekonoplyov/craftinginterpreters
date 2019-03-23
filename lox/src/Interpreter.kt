@@ -1,7 +1,7 @@
 class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
-    private val globals = Environment()
+    val globals = Environment()
     private var environment = globals
 
     init {
@@ -112,7 +112,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     override fun visitCallExpr(expr: Expr.Call): Any? {
         val callee = evaluate(expr.callee)
 
-        val arguments = expr.arguments.map { evaluate(it) }
+        val arguments = ArrayList(expr.arguments.map { evaluate(it) })
 
         if (callee !is LoxCallable) {
             throw RuntimeError(expr.paren, "Can only call functions and classes.")
@@ -123,7 +123,6 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         }
 
         return callee.call(this, arguments)
-
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
@@ -137,6 +136,11 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         } else {
             evaluate(stmt.expression)
         }
+    }
+
+    override fun visitFunctionStmt(stmt: Stmt.Function) {
+        val function = LoxFunction(stmt)
+        environment.define(stmt.name.lexeme, function)
     }
 
     override fun visitPrintStmt(stmt: Stmt.Print) {
@@ -167,7 +171,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         }
     }
 
-    private fun executeBlock(statements: List<Stmt>, environment: Environment) {
+    fun executeBlock(statements: List<Stmt>, environment: Environment) {
         val previous = this.environment
 
         try {

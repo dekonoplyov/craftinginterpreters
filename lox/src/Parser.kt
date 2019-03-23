@@ -18,6 +18,9 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
 
     private fun declaration(): Stmt? {
         try {
+            if (match(TokenType.FUN)) {
+                return function("function")
+            }
             if (match(TokenType.VAR)) {
                 return varDeclaration()
             }
@@ -38,6 +41,27 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
             match(TokenType.LEFT_BRACE) -> Stmt.Block(block())
             else -> expressionStatement()
         }
+    }
+
+    private fun function(kind: String): Stmt {
+        val name = consume(TokenType.IDENTIFIER, "Expect $kind name.")
+        consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
+
+        val parameters = ArrayList<Token>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 8) {
+                    lox.error(peek(), "Cannot have more than 8 parameters.")
+                }
+
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."))
+            } while (match(TokenType.COMMA))
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+
+        consume(TokenType.LEFT_BRACE, "Expect '{' before $kind body")
+        val body = block()
+        return Stmt.Function(name, parameters, body)
     }
 
     private fun varDeclaration(): Stmt {
@@ -144,19 +168,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun expression(): Expr {
-        return comma()
-    }
-
-    private fun comma(): Expr {
-        var expr = assignment()
-
-        while (match(TokenType.COMMA)) {
-            val operator = previous()
-            val right = assignment()
-            expr = Expr.Binary(expr, operator, right)
-        }
-
-        return expr
+        return assignment()
     }
 
     private fun assignment(): Expr {
