@@ -1,7 +1,20 @@
 class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
-    private var environment = Environment()
+    private val globals = Environment()
+    private var environment = globals
+
+    init {
+        globals.define("clock", object : LoxCallable {
+            override fun arity(): Int = 0
+
+            override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
+                return System.currentTimeMillis() / 1000.0
+            }
+
+            override fun toString(): String = "<native fun 'clock'>"
+        })
+    }
 
     fun interpret(statements: List<Stmt>) {
         try {
@@ -99,7 +112,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     override fun visitCallExpr(expr: Expr.Call): Any? {
         val callee = evaluate(expr.callee)
 
-        val arguments = arrayListOf(expr.arguments.forEach { evaluate(it) })
+        val arguments = expr.arguments.map { evaluate(it) }
 
         if (callee !is LoxCallable) {
             throw RuntimeError(expr.paren, "Can only call functions and classes.")
