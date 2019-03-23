@@ -9,3 +9,7 @@ if (true)
         print "wrong";
     else
         print "right";
+
+print "right" or "wrong";
+var wrong = nil;
+print !wrong and "right";
