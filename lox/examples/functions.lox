@@ -25,3 +25,17 @@ for (var i = 0; i < 20; i = i + 1) {
 
 var end = clock();
 print end - start;
+
+fun makeCounter(start) {
+  var i = start;
+  fun count() {
+    i = i + 1;
+    return i - 1; // yield mimic
+  }
+
+  return count;
+}
+
+var counter = makeCounter(10);
+print counter(); // "10".
+print counter(); // "11".
