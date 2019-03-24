@@ -8,7 +8,11 @@ class LoxFunction(private val declaration: Stmt.Function): LoxCallable {
             environment.define(paramToValue.first.lexeme, paramToValue.second)
         }
 
-        interpreter.executeBlock(declaration.body, environment)
+        try {
+            interpreter.executeBlock(declaration.body, environment)
+        } catch (r: Return) {
+            return r.value
+        }
         return null
     }
 

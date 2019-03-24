@@ -2,8 +2,8 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
     val globals = Environment()
-    private var environment = globals
 
+    private var environment = globals
     init {
         globals.define("clock", object : LoxCallable {
             override fun arity(): Int = 0
@@ -146,6 +146,12 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     override fun visitPrintStmt(stmt: Stmt.Print) {
         val value = evaluate(stmt.expression)
         println(stringify(value))
+    }
+
+    override fun visitReturnStmt(stmt: Stmt.Return) {
+        val value = evaluate(stmt.value)
+
+        throw Return(value)
     }
 
     override fun visitWhileStmt(stmt: Stmt.While) {
