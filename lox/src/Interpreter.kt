@@ -1,9 +1,10 @@
-class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
-    val globals = Environment()
-
+    private val globals = Environment()
     private var environment = globals
+    private val locals = HashMap<Expr, Int>()
+
     init {
         globals.define("clock", object : LoxCallable {
             override fun arity(): Int = 0
@@ -26,6 +27,10 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
         }
     }
 
+    fun resolve(expr: Expr, depth: Int) {
+        locals[expr] = depth
+    }
+
     private fun evaluate(expr: Expr): Any? {
         return expr.accept(this)
     }
@@ -36,7 +41,14 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
 
     override fun visitAssignExpr(expr: Expr.Assign): Any? {
         val value = evaluate(expr.value)
-        environment.assign(expr.name, value)
+
+        val distance = locals[expr]
+        if (distance == null) {
+            globals.assign(expr.name, value)
+        } else {
+            environment.assignAt(distance, expr.name, value)
+        }
+
         return value
     }
 
@@ -126,7 +138,7 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
-        return environment.get(expr.name)
+        return lookUpVariable(expr)
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
@@ -174,6 +186,15 @@ class Interpreter(private val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit>
             execute(stmt.thenBranch)
         } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch)
+        }
+    }
+
+    private fun lookUpVariable(expr: Expr.Variable): Any? {
+        val distance = locals[expr]
+        return if (distance == null) {
+            globals.get(expr.name)
+        } else {
+            environment.getAt(distance, expr.name.lexeme)
         }
     }
 

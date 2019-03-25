@@ -47,9 +47,12 @@ class Lox(val mode: Mode) {
         // should be fixed after synchronization
         val statements = parser.parse()
 
-        if (hadError) {
-            return
-        }
+        if (hadError) return
+
+        val resolver = Resolver(interpreter)
+        resolver.resolve(statements)
+
+        if (hadError) return
 
         interpreter.interpret(statements)
     }
