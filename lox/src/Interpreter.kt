@@ -142,6 +142,15 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         return callee.call(this, arguments)
     }
 
+    override fun visitGetExpr(expr: Expr.Get): Any? {
+        val obj = evaluate(expr.obj)
+        if (obj is LoxInstance) {
+            return obj.get(expr.name)
+        }
+
+        throw RuntimeError(expr.name, "Only instances have properties.")
+    }
+
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
         return lookUpVariable(expr)
     }

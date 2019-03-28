@@ -133,6 +133,11 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
         expr.arguments.forEach { resolve(it) }
     }
 
+
+    override fun visitGetExpr(expr: Expr.Get) {
+        resolve(expr.obj)
+    }
+
     override fun visitGroupingExpr(expr: Expr.Grouping) {
         resolve(expr.expression)
     }
