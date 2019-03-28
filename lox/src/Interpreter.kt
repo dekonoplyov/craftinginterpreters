@@ -2,6 +2,7 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     class RuntimeError(val token: Token, message: String) : RuntimeException(message)
 
     private val globals = Environment()
+
     private var environment = globals
     private val locals = HashMap<Expr, Int>()
 
@@ -98,8 +99,12 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
             if (!isTruthy(left))
                 return left
         } else {
-            lox.runtimeError(Interpreter.RuntimeError(expr.operator,
-                "Wrong token '${expr.operator.type}' in logical expression"))
+            lox.runtimeError(
+                Interpreter.RuntimeError(
+                    expr.operator,
+                    "Wrong token '${expr.operator.type}' in logical expression"
+                )
+            )
         }
 
         return evaluate(expr.right)
@@ -148,6 +153,14 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         } else {
             evaluate(stmt.expression)
         }
+    }
+
+    override fun visitClassStmt(stmt: Stmt.Class) {
+        // two-stage variable binding process
+        // allows references to the class inside its own methods
+        environment.define(stmt.name.lexeme, null)
+        val klass = LoxClass(stmt.name.lexeme)
+        environment.assign(stmt.name, klass)
     }
 
     override fun visitFunctionStmt(stmt: Stmt.Function) {

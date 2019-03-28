@@ -28,6 +28,11 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
         resolve(stmt.expression)
     }
 
+    override fun visitClassStmt(stmt: Stmt.Class) {
+        declare(stmt.name)
+        define(stmt.name)
+    }
+
     override fun visitFunctionStmt(stmt: Stmt.Function) {
         declare(stmt.name)
         define(stmt.name)

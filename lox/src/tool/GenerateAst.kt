@@ -23,6 +23,7 @@ fun defineType(baseName: String, className: String, fields: String, writer: Prin
     writer.println("        }")
     writer.println("    }")
 }
+
 fun defineVisitMethod(type: String, baseName: String): String {
     val className = type.split(":")[0].trim()
     return "        fun visit$className$baseName(${baseName.toLowerCase()}: $className): R"
@@ -35,7 +36,7 @@ fun defineVisitor(baseName: String, types: ArrayList<String>, writer: PrintWrite
                 prefix = "    interface Visitor<R> {\n",
                 postfix = "\n    }",
                 separator = "\n"
-            ) {defineVisitMethod(it, baseName)}
+            ) { defineVisitMethod(it, baseName) }
     )
 }
 
@@ -70,25 +71,30 @@ fun main(args: Array<String>) {
     }
 
     val outputDir = args[0]
-    defineAst(outputDir, "Expr", arrayListOf(
-        "Assign   : Token name, Expr value",
-        "Binary   : Expr left, Token operator, Expr right",
-        "Call     : Expr callee, Token paren, List<Expr> arguments",
-        "Grouping : Expr expression",
-        "Literal  : Object value",
-        "Logical  : Expr left, Token operator, Expr right",
-        "Unary    : Token operator, Expr right",
-        "Variable : Token name"
-    ))
+    defineAst(
+        outputDir, "Expr", arrayListOf(
+            "Assign   : Token name, Expr value",
+            "Binary   : Expr left, Token operator, Expr right",
+            "Call     : Expr callee, Token paren, List<Expr> arguments",
+            "Grouping : Expr expression",
+            "Literal  : Object value",
+            "Logical  : Expr left, Token operator, Expr right",
+            "Unary    : Token operator, Expr right",
+            "Variable : Token name"
+        )
+    )
 
-    defineAst(outputDir, "Stmt", arrayListOf(
-        "Block      : List<Stmt> statements",
-        "Expression : Expr expression",
-        "Function   : Token name, List<Token> params, List<Stmt> body",
-        "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
-        "Print      : Expr expression",
-        "Return     : Token keyword, Expr value",
-        "Var        : Token name, Expr initializer",
-        "While      : Expr condition, Stmt body"
-    ))
+    defineAst(
+        outputDir, "Stmt", arrayListOf(
+            "Block      : List<Stmt> statements",
+            "Class      : Token name, List<Stmt.Function> methods",
+            "Expression : Expr expression",
+            "Function   : Token name, List<Token> params, List<Stmt> body",
+            "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
+            "Print      : Expr expression",
+            "Return     : Token keyword, Expr value",
+            "Var        : Token name, Expr initializer",
+            "While      : Expr condition, Stmt body"
+        )
+    )
 }

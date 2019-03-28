@@ -17,18 +17,16 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun declaration(): Stmt? {
-        try {
-            if (match(TokenType.FUN)) {
-                return function("function")
+        return try {
+            when {
+                match(TokenType.CLASS) -> classDeclaration()
+                match(TokenType.FUN) -> function("function")
+                match(TokenType.VAR) -> varDeclaration()
+                else -> statement()
             }
-            if (match(TokenType.VAR)) {
-                return varDeclaration()
-            }
-
-            return statement()
         } catch (e: ParseError) {
             synchronize()
-            return null
+            null
         }
     }
 
@@ -44,7 +42,21 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         }
     }
 
-    private fun function(kind: String): Stmt {
+    private fun classDeclaration(): Stmt.Class {
+        val name = consume(TokenType.IDENTIFIER, "Expect class name.")
+        consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+
+        val methods = ArrayList<Stmt.Function>()
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"))
+        }
+
+        consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+
+        return Stmt.Class(name, methods)
+    }
+
+    private fun function(kind: String): Stmt.Function {
         val name = consume(TokenType.IDENTIFIER, "Expect $kind name.")
         consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
 
@@ -102,8 +114,9 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
 
         // desugaring
         if (increment != null) {
-           body = Stmt.Block(
-               arrayListOf(body, Stmt.Expression(increment)))
+            body = Stmt.Block(
+                arrayListOf(body, Stmt.Expression(increment))
+            )
         }
 
         if (condition != null) {
@@ -112,7 +125,8 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
 
         if (initializer != null) {
             body = Stmt.Block(
-                arrayListOf(initializer, body))
+                arrayListOf(initializer, body)
+            )
         }
 
         return body
@@ -206,7 +220,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         var expr = and()
 
         while (match(TokenType.OR)) {
-            val operator =  previous()
+            val operator = previous()
             val right = and()
             expr = Expr.Logical(expr, operator, right)
         }
@@ -396,7 +410,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
     }
 
     private fun isAtEnd(): Boolean {
-        check(current < tokens.size) { "Invalid state where we advanced too much"}
+        check(current < tokens.size) { "Invalid state where we advanced too much" }
         return peek().type == TokenType.EOF
     }
 }

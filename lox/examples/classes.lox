@@ -1,0 +1,5 @@
+class Animal {
+    makeSound() {}
+}
+
+print Animal;
