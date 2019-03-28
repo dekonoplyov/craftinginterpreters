@@ -12,4 +12,8 @@ class LoxInstance(val klass: LoxClass) {
 
         throw Interpreter.RuntimeError(name, "Undefined property ${name.lexeme}.")
     }
+
+    fun set(name: Token, value: Any?) {
+        fields[name.lexeme] = value
+    }
 }

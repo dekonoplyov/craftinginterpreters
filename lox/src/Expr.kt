@@ -4,6 +4,7 @@ abstract class Expr {
         fun visitBinaryExpr(expr: Binary): R
         fun visitCallExpr(expr: Call): R
         fun visitGetExpr(expr: Get): R
+        fun visitSetExpr(expr: Set): R
         fun visitGroupingExpr(expr: Grouping): R
         fun visitLiteralExpr(expr: Literal): R
         fun visitLogicalExpr(expr: Logical): R
@@ -34,6 +35,12 @@ abstract class Expr {
     class Get(val obj: Expr, val name: Token) : Expr() {
         override fun<R> accept(visitor: Visitor<R>): R {
             return visitor.visitGetExpr(this)
+        }
+    }
+
+    class Set(val obj: Expr, val name: Token, val value: Expr) : Expr() {
+        override fun<R> accept(visitor: Visitor<R>): R {
+            return visitor.visitSetExpr(this)
         }
     }
 

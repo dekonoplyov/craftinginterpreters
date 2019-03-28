@@ -202,14 +202,16 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
         val expr = or()
 
         if (match(TokenType.EQUAL)) {
-            val equals = previous()
             val value = assignment()
 
             if (expr is Expr.Variable) {
                 val name = expr.name
                 return Expr.Assign(name, value)
+            } else if (expr is Expr.Get) {
+                return Expr.Set(expr.obj, expr.name, value)
             }
 
+            val equals = previous()
             error(lox, equals, "Invalid assignment target.")
         }
 

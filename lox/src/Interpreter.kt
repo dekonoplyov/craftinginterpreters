@@ -151,6 +151,14 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         throw RuntimeError(expr.name, "Only instances have properties.")
     }
 
+    override fun visitSetExpr(expr: Expr.Set): Any? {
+        val obj = evaluate(expr.obj) as? LoxInstance ?: throw RuntimeError(expr.name, "Only instances have fields.")
+
+        val value = evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
+    }
+
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
         return lookUpVariable(expr)
     }
