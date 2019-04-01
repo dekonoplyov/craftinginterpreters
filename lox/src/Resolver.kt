@@ -4,7 +4,8 @@ import kotlin.collections.HashMap
 class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.Visitor<Unit> {
     private enum class FunctionType {
         NONE,
-        FUNCTION
+        FUNCTION,
+        METHOD
     }
 
     private val scopes = Stack<Map<String, Boolean>>()
@@ -30,6 +31,12 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
 
     override fun visitClassStmt(stmt: Stmt.Class) {
         declare(stmt.name)
+
+        for (method in stmt.methods) {
+            val declaration = FunctionType.METHOD
+            resolveFunction(method, declaration)
+        }
+
         define(stmt.name)
     }
 
@@ -100,7 +107,7 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
     }
 
     private fun resolveFunction(function: Stmt.Function, type: FunctionType) {
-        val enclosingFuncton = currentFunction
+        val enclosingFunction = currentFunction
         currentFunction = type
 
         beginScope()
@@ -111,7 +118,7 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
         resolve(function.body)
         endScope()
 
-        currentFunction = enclosingFuncton
+        currentFunction = enclosingFunction
     }
 
     private fun resolve(expr: Expr) {

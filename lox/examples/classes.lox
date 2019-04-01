@@ -1,6 +1,7 @@
 class Animal {
-    makeSound() {}
+    makeSound() { print "bork"; }
 }
 
 print Animal;
 print Animal();
+Animal().makeSound();
