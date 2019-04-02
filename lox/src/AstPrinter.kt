@@ -1,4 +1,8 @@
 class AstPrinter : Expr.Visitor<String> {
+    override fun visitThisExpr(expr: Expr.This): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun visitSetExpr(expr: Expr.Set): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -59,6 +63,10 @@ class AstPrinter : Expr.Visitor<String> {
 }
 
 class RpnPrinter : Expr.Visitor<String> {
+    override fun visitThisExpr(expr: Expr.This): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun visitSetExpr(expr: Expr.Set): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

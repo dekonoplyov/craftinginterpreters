@@ -159,8 +159,12 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         return value
     }
 
+    override fun visitThisExpr(expr: Expr.This): Any? {
+        return lookUpVariable(expr.keyword, expr)
+    }
+
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
-        return lookUpVariable(expr)
+        return lookUpVariable(expr.name, expr)
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
@@ -226,12 +230,12 @@ class Interpreter(val lox: Lox) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         }
     }
 
-    private fun lookUpVariable(expr: Expr.Variable): Any? {
+    private fun lookUpVariable(name: Token, expr: Expr): Any? {
         val distance = locals[expr]
         return if (distance == null) {
-            globals.get(expr.name)
+            globals.get(name)
         } else {
-            environment.getAt(distance, expr.name.lexeme)
+            environment.getAt(distance, name.lexeme)
         }
     }
 

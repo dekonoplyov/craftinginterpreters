@@ -323,6 +323,7 @@ class Parser(private val lox: Lox, private val tokens: List<Token>) {
             match(TokenType.FALSE) -> return Expr.Literal(false)
             match(TokenType.NIL) -> return Expr.Literal(null)
             match(TokenType.NUMBER, TokenType.STRING) -> return Expr.Literal(previous().literal)
+            match(TokenType.THIS) -> Expr.This(previous())
             match(TokenType.IDENTIFIER) -> return Expr.Variable(previous())
             match(TokenType.LEFT_PAREN) -> {
                 val expr = expression()

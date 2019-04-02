@@ -8,8 +8,14 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
         METHOD
     }
 
+    private enum class ClassType {
+        NONE,
+        CLASS
+    }
+
     private val scopes = Stack<Map<String, Boolean>>()
     private var currentFunction = FunctionType.NONE
+    private var currentClass = ClassType.NONE
 
     fun resolve(statements: List<Stmt>) {
         statements.forEach { resolve(it) }
@@ -30,14 +36,22 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
+        val enclosingClass = currentClass
+        currentClass = ClassType.CLASS
+
         declare(stmt.name)
+        define(stmt.name)
+
+        beginScope()
+        (scopes.peek() as MutableMap)["this"] = true
 
         for (method in stmt.methods) {
             val declaration = FunctionType.METHOD
             resolveFunction(method, declaration)
         }
 
-        define(stmt.name)
+        currentClass = enclosingClass
+        endScope()
     }
 
     override fun visitFunctionStmt(stmt: Stmt.Function) {
@@ -147,6 +161,16 @@ class Resolver(private val interpreter: Interpreter) : Expr.Visitor<Unit>, Stmt.
     override fun visitSetExpr(expr: Expr.Set) {
         resolve(expr.value)
         resolve(expr.obj)
+    }
+
+    override fun visitThisExpr(expr: Expr.This) {
+        if (currentClass == ClassType.NONE) {
+            interpreter.lox.error(
+                expr.keyword,
+                "Cannot use 'this' outside of a class."
+            )
+        }
+        resolveLocal(expr, expr.keyword)
     }
 
     override fun visitGroupingExpr(expr: Expr.Grouping) {
